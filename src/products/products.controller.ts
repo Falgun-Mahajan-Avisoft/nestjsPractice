@@ -29,7 +29,9 @@ import { joiValidationPipe } from './DTO/joiValidation.pipe';
 import { productSchema } from './DTO/productsSchema';
 import { IdException } from 'src/exceptions/idExceptions';
 import { IdExceptionFilter } from 'src/exceptions/idException.filter';
+import { HttpExceptionFilter } from 'src/exceptions/httpException.filter';
 @Controller('products')
+@UseFilters(HttpExceptionFilter)
 export class ProductsController {
   constructor(
     private productService: ProductsService,
@@ -63,7 +65,7 @@ export class ProductsController {
   @UseFilters(IdExceptionFilter)
   findOne(@Param('id',new ParseIntPipe({errorHttpStatusCode:HttpStatus.NOT_ACCEPTABLE})) id: number) {
     if(id<=0){
-      throw new IdException();
+      // throw new IdException();
       // throw new InternalServerErrorException()
       // throw new GatewayTimeoutException()
       // throw new ForbiddenException()
@@ -73,7 +75,7 @@ export class ProductsController {
       //   error:"invalid id",
       //   message:"Id must be higher than 0"
       // })
-      // throw new BadRequestException("Id must be higher than 0", "id is not valid")
+      throw new BadRequestException("Id must be higher than 0", "id is not valid")
       // throw new HttpException({error:'invalid id', message:"Id must be greater than 0"},400)
     }
     return this.productService.getProduct(id);
