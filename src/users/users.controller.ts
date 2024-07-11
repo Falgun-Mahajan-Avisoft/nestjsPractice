@@ -6,6 +6,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  OnModuleInit,
   Param,
   Post,
   Query,
@@ -20,7 +21,11 @@ name:string,
 age:number
 }
 @Controller('users')
-export class UsersController {
+export class UsersController implements OnModuleInit {
+  onModuleInit() {
+      console.log("User Module init");
+      
+  }
   constructor(  private productService: ProductsService){
     console.log(productService)
   }

@@ -16,8 +16,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
+  Req,
   UnauthorizedException,
   UseFilters,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -30,11 +33,16 @@ import { productSchema } from './DTO/productsSchema';
 import { IdException } from 'src/exceptions/idExceptions';
 import { IdExceptionFilter } from 'src/exceptions/idException.filter';
 import { HttpExceptionFilter } from 'src/exceptions/httpException.filter';
+import { AppExceptionFilter } from 'src/exceptions/AppException.filter';
+import { Request } from 'express';
+import { ProductsInterceptor } from './Interceptors/products.interceptors';
+import { RecentSearchProduct } from './recent-search.service';
 @Controller('products')
-@UseFilters(HttpExceptionFilter)
+// @UseFilters(HttpExceptionFilter)
 export class ProductsController {
   constructor(
     private productService: ProductsService,
+    private recentSearchProduct: RecentSearchProduct,
     // @Inject('Database_Name') private dbname: string,
     // @Inject('mail') private mails: string[],
     // @Inject('env_config') private config: Record<string,any> ,
@@ -46,25 +54,46 @@ export class ProductsController {
   //   return this.productService.createProducts(createProductsDto);
   // }
   @Post()
-  
-  create(@Body(new ValidationPipe({stopAtFirstError:true})) createProductsDto: createProductsDTO) {
+  create(
+    @Body(new ValidationPipe({ stopAtFirstError: true }))
+    createProductsDto: createProductsDTO,
+  ) {
     return this.productService.createProducts(createProductsDto);
   }
 
   @Post('/timestamps')
-  createTimestamp(@Body(ParseDatePipe) date:Date){
+  createTimestamp(@Body(ParseDatePipe) date: Date) {
     return date;
   }
 
   @Get()
-  findAll(@Ip() ip: string) {
+  findAll(@Ip() ip: string, @Req() req: Request) {
     console.log(ip);
+    console.log(req['ua']);
+
     return this.productService.getAllProducts();
   }
+  @Get('/search')
+  @UseInterceptors(ProductsInterceptor)
+  findSearch(@Query('query') query: string) {
+    return this.productService.getSearchProduct(query);
+  }
+  @Get('/recent-search')
+  findRecenetSearch(@Query('token') token: string) {
+    return this.recentSearchProduct.find(token);
+  }
   @Get('/:id')
-  @UseFilters(IdExceptionFilter)
-  findOne(@Param('id',new ParseIntPipe({errorHttpStatusCode:HttpStatus.NOT_ACCEPTABLE})) id: number) {
-    if(id<=0){
+  // @UseFilters(IdExceptionFilter)
+  // @UseFilters(AppExceptionFilter)
+  findOne(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    id: number,
+  ) {
+    if (id <= 0) {
+      throw new Error('Invalid ID');
       // throw new IdException();
       // throw new InternalServerErrorException()
       // throw new GatewayTimeoutException()
@@ -75,7 +104,7 @@ export class ProductsController {
       //   error:"invalid id",
       //   message:"Id must be higher than 0"
       // })
-      throw new BadRequestException("Id must be higher than 0", "id is not valid")
+      // throw new BadRequestException("Id must be higher than 0", "id is not valid")
       // throw new HttpException({error:'invalid id', message:"Id must be greater than 0"},400)
     }
     return this.productService.getProduct(id);
