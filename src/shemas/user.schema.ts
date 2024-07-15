@@ -1,4 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
+import { ACCOUNT_STATUS, ACCOUNT_TYPE } from 'src/constants/account.constants';
 
 @Schema({
   timestamps: true,
@@ -27,15 +28,26 @@ export class User {
   phone?: string;
 
  @Prop({
-    enum:["APPROVAL_PENDING", "ACTIVE", "INACTIVE", "BLOCKED", "DELETED"],
-    default:"ACTIVE"
+    type:String,
+    enum:Object.keys(ACCOUNT_STATUS),
+    default:ACCOUNT_STATUS.ACTIVE
  })
- status?:string
+ status?:ACCOUNT_STATUS
 
  @Prop({
-    enum:["STUDENT", "EMPLOYER"],
+    type:String,
+    enum:Object.keys(ACCOUNT_TYPE),
     immutable:true,
     required:true
  })
- accountType:string
+ accountType:ACCOUNT_TYPE
+
+ @Prop({default:[]})
+ social?:string[]
+
+ @Prop({default:false})
+ isEmailVerified?:boolean
+
+ @Prop({required:true})
+ address;
 }
