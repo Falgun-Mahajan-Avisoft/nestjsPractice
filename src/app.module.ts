@@ -1,4 +1,12 @@
-import { BeforeApplicationShutdown, MiddlewareConsumer, Module, NestModule, OnApplicationBootstrap, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import {
+  BeforeApplicationShutdown,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  OnModuleInit,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersController } from './users/users.controller';
@@ -8,23 +16,40 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppExceptionFilter } from './exceptions/AppException.filter';
 import { AuthMiddleware } from './middlewares/Auth.middleware';
 import { LoggerInterceptor } from './products/Interceptors/logger.interceptor';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AdminModule } from './admin/admin.module';
+import configuration from './config/configuration';
+import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseConfigService } from './infra/mongoose/mongoose-config.service';
+import { DatabaseModule } from './infra/mongoose/database.module';
+
 function createConnection(options = {}) {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
-        message: "CONNECTED",
+        message: 'CONNECTED',
         options,
       });
     }, 5000);
   });
 }
 @Module({
-  imports: [ProductsModule],
-  controllers: [
-    AppController,
-    UsersController,
-    HostControllerController,
+  imports: [
+    ProductsModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    //   ConfigModule.forRoot({
+    //   // envFilePath:[".env",".dev.env"],
+    //   // ignoreEnvFile:true,
+    //   load:configuration,
+    //   cache:true,
+    //   expandVariables:true,
+    //   isGlobal:true
+    // }),
+    AdminModule,
+    DatabaseModule,
   ],
+
+  controllers: [AppController, UsersController, HostControllerController],
   providers: [
     AppService,
 
@@ -46,8 +71,8 @@ function createConnection(options = {}) {
     //   inject: ["DB_Options"],
     // },
     {
-      provide:"DB_Options",
-      useValue:{url:'', user:'', password:''}
+      provide: 'DB_Options',
+      useValue: { url: '', user: '', password: '' },
     },
     // {
     //   provide:APP_FILTER,useClass:AppExceptionFilter
@@ -57,18 +82,23 @@ function createConnection(options = {}) {
     // }
   ],
 })
-export class AppModule implements OnApplicationBootstrap,BeforeApplicationShutdown,OnApplicationShutdown , NestModule {
+export class AppModule
+  implements
+    OnApplicationBootstrap,
+    BeforeApplicationShutdown,
+    OnApplicationShutdown,
+    NestModule
+{
   onApplicationBootstrap() {
-    console.log("Application bootstrap")
+    console.log('Application bootstrap');
+  }
+  beforeApplicationShutdown(signal?: string) {
+    console.log('Before Application shutdown', signal);
+  }
+  onApplicationShutdown(signal?: string) {
+    console.log('on Application shutdown', signal);
+  }
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AuthMiddleware).forRoutes('*');
+  }
 }
-beforeApplicationShutdown(signal?: string) {
-    console.log("Before Application shutdown",signal)
-}
-onApplicationShutdown(signal?: string) {
-  console.log("on Application shutdown",signal)
-}
-configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes("*")
-}
-}
-

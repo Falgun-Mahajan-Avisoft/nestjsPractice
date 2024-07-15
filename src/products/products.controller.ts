@@ -20,6 +20,7 @@ import {
   Req,
   UnauthorizedException,
   UseFilters,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -37,6 +38,7 @@ import { AppExceptionFilter } from 'src/exceptions/AppException.filter';
 import { Request } from 'express';
 import { ProductsInterceptor } from './Interceptors/products.interceptors';
 import { RecentSearchProduct } from './recent-search.service';
+import { ProductsGuard } from './guards/products.guard';
 @Controller('products')
 // @UseFilters(HttpExceptionFilter)
 export class ProductsController {
@@ -67,6 +69,7 @@ export class ProductsController {
   }
 
   @Get()
+  @UseGuards(ProductsGuard)
   findAll(@Ip() ip: string, @Req() req: Request) {
     console.log(ip);
     console.log(req['ua']);

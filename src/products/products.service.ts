@@ -1,8 +1,13 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { createProductsDTO } from './DTO/ProductsDTO';
+import { ConfigService } from '@nestjs/config';
 
 // @Injectable({scope:Scope.TRANSIENT})
 // @Injectable({scope:Scope.REQUEST})
+interface JwtConfig{
+  "JWT.SECRET":string;
+  "JWT.EXPIRE_TIME":number
+}
 @Injectable()
 export class ProductsService {
   private products: createProductsDTO[] = [
@@ -12,9 +17,22 @@ export class ProductsService {
     { id: 4, name: 'Intel Laptop', price: 299 },
   ];
 
-  constructor() {
-    console.log('Service init');
-  }
+  // constructor(private readonly configService : ConfigService) {
+  //   const port = this.configService.get<number>("APP_PORT")
+  //   const email = this.configService.get<string>("APP_EMAIL.SUPPORT")
+  //   const dbPort = this.configService.get<number>("DATABASE.PORT")
+  //   const dbUrl = this.configService.get<string>("DATABASE.url")
+  //   const isLocalDb = this.configService.get<Function>("DATABASE.isLocal")
+  //   const cron = this.configService.get("CRON")
+  //   const url = this.configService.get("ADMIN_DATABASE.URL")
+  //   console.log('Service init', port, email, dbPort, dbUrl, isLocalDb(), cron, url);
+  // }
+  // constructor(private readonly configService : ConfigService<JwtConfig>) {
+  //   const secret = this.configService.get<string>("JWT.SECRET")
+  //   const expireTime = this.configService.get<number>("JWT.EXPIRE_TIME")
+    
+  //   console.log('Service init',secret,expireTime);
+  // }
 
   createProducts(product: createProductsDTO): string {
     console.log('hello');

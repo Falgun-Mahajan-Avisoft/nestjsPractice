@@ -6,6 +6,7 @@ import { ParseDateOptions } from './parseDate.pipe';
 import { userAgent, UserAgentMiddleware, UserAgentOptions } from 'src/middlewares/user-agent.middleware';
 import { AuthMiddleware } from 'src/middlewares/Auth.middleware';
 import { RecentSearchProduct } from './recent-search.service';
+
 @Global()
 @Module({
     imports:[],
